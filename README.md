@@ -1,7 +1,8 @@
 # My Arch Installation Manual #
-This manual is gibrid of official installation guide - https://wiki.archlinux.org/index.php/Installation_guide  ,
-Arch users manuals like - https://gist.github.com/tz4678/bd33f94ab96c96bc6719035fcac2b807  ,
-And my own improvements and configurations.
+
+This manual is gibrid of official installation guide - https://wiki.archlinux.org/index.php/Installation_guide</br>
+Arch users manuals like - https://gist.github.com/tz4678/bd33f94ab96c96bc6719035fcac2b807</br>
+And my own improvements and configurations.</br>
 Hope it will help you with own arch installation, but i create this instruction only to save my own time)))
 
 ## 1. Check iso sum(md5, sha1) and signature verify ##
@@ -37,3 +38,4 @@ ping archlinux.org
 ```
 Great!
 ## 4. Time ##
+ 
