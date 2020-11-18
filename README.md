@@ -24,16 +24,15 @@ Than your iso is OK and you can write it on your flash.
 Otherwise, you should know that your image is damaged and needs to be reinstalled. This is looks like this:</br>
 >archlinux-2020.11.01-x86_64.iso: FAILED</br>
 >sha1sum: WARNING: 1 computed checksum did NOT match
-
 ### 1.2 md5sum ###
 Everything is the same but with MD5:
 ```bash
 echo "md5sum_of_archlinux_iso archlinus-version-x86_64.iso" | md5sum --check -
 ```
-
 ### 1.3 Signature verify ###\
 If you already use arch you can use:
 ```bash
+```
 
 ## 2. Writing an image on flash ##
 
@@ -44,6 +43,7 @@ sudo dd of=/path/to/arch_iso if=/dev/your_flash bs=8M status=progress
 ```
 ### Using gui image writer ###
 Everything is the same but with gui application. I prefer use Balena Etcher, it is simple, minimalistic and beautiful app. Etcher is available for Windows, Linux and MacOS. You can download it from offical web-site - https://www.balena.io/etcher/
+![Etcher image](/img/etcher.png)
 ## **3. Network configuration (real installation)** ##
 ### 3.1 Ethernet ###
 If you use ethernet, you should skip this point, because ethernet internet working already. But you should check your Internet connection.
