@@ -1,9 +1,9 @@
 # My Arch Installation Instructions (2020, UEFI) #
 
-This manual is gibrid of official installation guide - https://wiki.archlinux.org/index.php/Installation_guide</br>
+This manual is merge of official installation guide - https://wiki.archlinux.org/index.php/Installation_guide</br>
 Arch users manuals like - https://gist.github.com/tz4678/bd33f94ab96c96bc6719035fcac2b807</br>
 And my own improvements and configurations.</br>
-This is instruction for UEFI, but anyway you can find there some interesing commands and tricks.</br>
+This is instruction for UEFI, but anyway you can find there some interesing for you too.</br>
 Hope it will help you with first arch installation, but i create this instruction only to save my own time)))
 
 ## 1. Check iso file ##
@@ -176,8 +176,15 @@ In the following examples, /etc/pacman.d/mirrorlist will be overwritten. Make a 
 ```bash
 cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak
 ```
+ 
+### 7.2 Sync repositories ###
 
-### 7.2 Sorting mirrors ###
+Sync the pacman repository so that you can download and install software:
+```bash
+pacman -Syy
+```
+
+### 7.3 Sorting mirrors ###
 
 Now we can start sorting mirrorlist. Firslty we need to download ___reflector___:
 ```bash
@@ -290,15 +297,23 @@ And setting pass to that user:
 ```bash
 passwd username
 ```
-Now in /etc/sudoers we need to uncommect "%wheel ALL=(ALL:ALL) ALL" using ___visudo___:
+Now, using ___visudo___ in /etc/sudoers we need to uncomment "%wheel ALL=(ALL:ALL) ALL":
 ```bash
 visudo
 ```
 
 ### 9.7 Grub ###
 
+Installing grub:
 ```bash
 grub-install --target=x86_64-efi --efi-directory=/boot/efi
+```
+Also i am setting GRUB_TIMEOUT=0 in /etc/default/grub, but you can ___SKIP___ this step, because it is dont necessary:
+```bash
+vim /etc/default/grub
+```
+And creating cfg file:
+```bash
 grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
@@ -317,8 +332,73 @@ When we booted in installeted arch, we need configure internet connection, if yo
 
 ### 10.1 Internet connection ### 
 
-http://rus-linux.net/MyLDP/consol/wifi-from-command-line.html
+Next instruction was taken from http://rus-linux.net/MyLDP/consol/wifi-from-command-line.html
 
+#### 10.1.1 Ethernet ####
+
+SKIP THIS STEP!
+
+#### 10.1.2 WiFi ####
+
+So first, it is assumed that you have the correct drivers loaded for your wireless network card. Without this, nothing will work.</br>
+Then you can check which network interfaces wireless connections support with the command:
+```bash
+iwconfig
+```
+You will see this output:
+PHOTO</br>
+And you should find there your wireless network card, in my case its wlp2s0(its has different names, for example: wlan0, wlp2s0....)</br>
+Then, just in case, check that the interface is enabled:
+```bash
+sudo ip link set <wireless network card> up # REPLACE <wireless network card> with your, in my case wlp2s0
+```
+Once you know that your interface is working, you can search for available wireless networks with the command:</br>
+```bash
+sudo iw dev <wireless network card> scan | less
+```
+From the output, you can find out the name of the network (SSID), the signal strength and the type of security used (that is, WEP, WPA / WPA2).<br>
+
+##### 10.1.2.1 Unsecure network #####
+
+If your AP without pass you can immediately connect to it:
+```bash
+sudo iw dev <wireless network card> connect [network SSID]
+```
+
+##### 10.1.2.2 WEP #####
+
+If your network uses WEP encryption, it's also quite simple:
+```bash
+sudo iw dev wlan0 connect [network SSID] key 0: [WEP key]
+```
+
+##### 10.1.2.3 WPA/WPA2 #####
+
+But if your network uses WPA or WPA2, things get more complicated. In this case, you need to use the wpa_supplicant utility, which is not always preinstalled on the system. You need write some lines in this file - /etc/wpa_supplicant/wpa_supplicant.conf. In my case its doesn't exists and i created it, but in other case i recommend adding them to the end of the file and making sure other configurations are commented out. Be careful as both ssid and password are case sensitive. You can enter the access point name instead of ssid, and wpa_supplicant will replace it with the corresponding ssid.
+```bash
+sudo vim /etc/wpa_supplicant/wpa_supplicant.conf 
+```
+And write this into file:
+>network={</br>
+>ssid="[network ssid]"</br>
+>psk="[the passphrase]"</br>
+>priority=1</br>
+>}
+
+After completing the configuration, run this command in the background:
+```bash
+sudo wpa_supplicant -i <wireless network card> -c /etc/wpa_supplicant/wpa_supplicant.conf
+```
+
+Now you need to get the IP address using the command:
+```bash
+sudo dhcpcd <wireless network card>
+```
+
+If done correctly, you should obtain a new IP address via DHCP and the process will run in the background. You can always check for a connection with the command:
+```bash
+iwconfig
+```
 ### 10.2 Update ###
 
 ```bash
@@ -338,10 +418,10 @@ Choose one of them and install:
 sudo pacman -S <your-driver>
 ```
 
-### 10.4 Xorg installation and configuration###
+### 10.4 Xorg installation and configuration ###
 
 ```bash
-sudo pacman -S xorg-server xorg-apps
+sudo pacman -S xorg xorg-xinit bspwm sxhkd dmenu nitrogen picom konsole chromium arandr
 sudo Xorg :0 -configure
 sudo cp /root/xorg.conf.new /etc/X11/xorg.conf
 ```
