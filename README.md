@@ -338,14 +338,11 @@ SKIP THIS STEP!
 
 #### 10.1.2 WiFi ####
 
-So first, it is assumed that you have the correct drivers loaded for your wireless network card. Without this, nothing will work.</br>
-Then you can check which network interfaces wireless connections support with the command:
+Check your network interfaces with the command:
 ```bash
 iwconfig
 ```
-You will see this output:
-PHOTO</br>
-And you should find there your wireless network card, in my case its wlp2s0(its has different names, for example: wlan0, wlp2s0....)</br>
+You should find there your wireless network card, in my case its wlp2s0(its has different names, for example: wlan0, wlp2s0....)</br>
 Then, just in case, check that the interface is enabled:
 ```bash
 sudo ip link set <wireless network card> up # REPLACE <wireless network card> with your, in my case wlp2s0
