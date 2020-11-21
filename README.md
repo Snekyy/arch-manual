@@ -190,12 +190,10 @@ Now we can start sorting mirrorlist. Firslty we need to download ___reflector___
 ```bash
 pacman -S reflector
 ```
-
-And now we can sort mirrors:
+This command will add top 5 fastest mirror to the top of mirrorlist:
 ```bash
 reflector --verbose --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
 ```
-This command will add top 5 fastest mirror to the top of mirrorlist.</br>
 Or you can sort at once 200 mirrors:
 ```bash
 reflector --verbose --latest 200 --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
@@ -418,13 +416,6 @@ Choose one of them and install:
 sudo pacman -S <your-driver>
 ```
 
-### 10.4 Xorg installation and configuration ###
-
-```bash
-sudo pacman -S xorg xorg-xinit bspwm sxhkd dmenu nitrogen picom konsole chromium arandr
-sudo Xorg :0 -configure
-sudo cp /root/xorg.conf.new /etc/X11/xorg.conf
-```
-
-### 10.5 INSTALLING THE GRAPHICAL ENVIRONMENT ###
+# THX FOR READING THIS! #
+After that you can do with your system what do you want)
 
