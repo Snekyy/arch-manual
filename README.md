@@ -135,7 +135,7 @@ I have two disks ssd and hdd. Root(/) and efi(/boot/efi) partitions will be on s
 ```bash
 fdisk /dev/XXX # replace XXX with your ssd
 ```
-Creating partitions using "n" command, 512M to efi all other space to root part. 
+Creating new gpt table of partitions using "g" command. Than creating new partition with "n" 512M to efi all other space to root part. 
 Than using "t" command changing type of 512 MB partition to EFI System. 
 And write changes with "w".</br>
 
@@ -143,14 +143,13 @@ Than we need to create a home partition on hdd:
 ```bash
 fdisk /dev/XXX # replace XXX with your hdd
 ```
-Creating partitions using "n" command, and save changes with "w"</br>
-
+New gpt partition table - "g", new partition - "n" and save - "w".
 ### 6.2 Format partitions ###
 Now we need to format they in correct file systems.
 ```bash
-mkfs.fat -F32 /dev/efi_partition # nvme0n1p1
-mkfs.ext4 /dev/root_partition # in my case nvme0n1p2
-mkfs.ext4 /dev/sda1 # home partition
+mkfs.fat -F32 /dev/efi_partition
+mkfs.ext4 /dev/root_partition
+mkfs.ext4 /dev/home_partition
 ```
 
 ### 6.3 Mount file systems ###
@@ -160,7 +159,7 @@ mount /dev/root_partition /mnt
 mkdir -p /mnt/boot/efi
 mount /dev/efi_partition /mnt/boot/efi
 mkdir /mnt/home
-mount /dev/sda1 /mnt/home
+mount /dev/home_partition /mnt/home
 ```
 You can check your partitions for correct mount with:
 ```bash
@@ -318,7 +317,6 @@ grub-mkconfig -o /boot/grub/grub.cfg
 ### 9.8 Umount /mnt and reboot ###
 
 ```bash
-systemctl enable dhcpcd
 exit
 umount -R /mnt
 shutdown now
@@ -338,11 +336,10 @@ SKIP THIS STEP!
 
 #### 10.1.2 WiFi ####
 
-Check your network interfaces with the command:
+Check your network interface with iwconfig. You should find there your wireless network card, in my case its wlp2s0 (but its has different names, for example: wlan0, wlp2s0....</br>
 ```bash
 iwconfig
 ```
-You should find there your wireless network card, in my case its wlp2s0(its has different names, for example: wlan0, wlp2s0....)</br>
 Then, just in case, check that the interface is enabled:
 ```bash
 sudo ip link set <wireless network card> up # REPLACE <wireless network card> with your, in my case wlp2s0
@@ -384,12 +381,10 @@ After completing the configuration, run this command in the background:
 ```bash
 sudo wpa_supplicant -i <wireless network card> -c /etc/wpa_supplicant/wpa_supplicant.conf
 ```
-
-Now you need to get the IP address using the command:
+Than:
 ```bash
 sudo dhcpcd <wireless network card>
 ```
-
 If done correctly, you should obtain a new IP address via DHCP and the process will run in the background. You can always check for a connection with the command:
 ```bash
 iwconfig
