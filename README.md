@@ -1,9 +1,8 @@
-# My Arch Installation Instruction (2020, UEFI) #
+# My Arch Installation Instruction (2020, BIOS/UEFI) #
 
 This manual is merge of official installation guide - https://wiki.archlinux.org/index.php/Installation_guide</br>
 Arch users manuals like - https://gist.github.com/tz4678/bd33f94ab96c96bc6719035fcac2b807</br>
 And my own improvements and configurations.</br>
-This is instruction for UEFI, but anyway you can find there some interesing for you too.</br>
 Hope it will help you with first arch installation, but i create this instruction only to save my own time)))
 
 
@@ -135,11 +134,11 @@ Everything is the same but with gui application. I prefer use Balena Etcher, it 
 ![Image](/img/etcher.png)
 
 ## 3. Verify the boot mode
-After we boot with flash first of all we need to verify the boot mode. We are installing arch on UEFI, so lets check the boot mode:
+After we boot with flash first of all we need to verify the boot mode.
 ```bash
 ls /sys/firmware/efi/efivars
 ```
-If the command shows the directory without error, then the system is booted in UEFI mode. If the directory does not exist, the system may be booted in BIOS (or CSM) mode. If the system did not boot in UEFI refer to your motherboard's manual or your computer doesn't support UEFI...
+If the command shows the directory without error, then the system is booted in UEFI mode. If the directory does not exist, the system may be booted in BIOS (or CSM) mode.
 
 ## 4. Connect to the Internet
 Lets set up an Internet connection.
@@ -181,21 +180,31 @@ timedatectl set-ntp true
 ## 6. Partition the disks, format partitions, mount file systems
 
 ### 6.1 Partition the disks
-I have two disks ssd and hdd. Root(/) and efi(/boot/efi) partitions will be on ssd, /home on hdd. To partition the disks i will use __fdisk__
+
 ```bash
-fdisk /dev/XXX # replace XXX with your ssd
+fdisk /dev/XXX # replace XXX with your disk
 ```
+#### BIOS ####
+In BIOS case you can create only root(/) partition:
+
+
+Creating new dos table of partitions using "o" command. Than creating new partition with full size of disk using "n". 
+And saving changes - "w". 
+
+#### UEFI ####
 Creating new gpt table of partitions using "g" command. Than creating new partition with "n" 512M to efi all other space to root part. 
 Than using "t" command changing type of 512 MB partition to EFI System. 
 And write changes with "w".</br></br>
 Than we need to create a home partition on hdd:
-```bash
-fdisk /dev/XXX # replace XXX with your hdd
-```
-New gpt partition table - "g", new partition - "n" and save - "w".
 
 ### 6.2 Format partitions
-Now we need to format they in correct file systems.
+
+#### BIOS ####
+```bash
+mkfs.ext4 /dev/root_partition
+```
+
+#### UEFI ####
 ```bash
 mkfs.fat -F32 /dev/efi_partition
 mkfs.ext4 /dev/root_partition
@@ -203,14 +212,22 @@ mkfs.ext4 /dev/home_partition
 ```
 
 ### 6.3 Mount file systems
-Mount the root volume to /mnt. Efi partition to /mnt/boot/efi. And home to /mnt/home.
+
+#### BIOS ####
+
+```bash
+mount /dev/root_partition /mnt
+```
+
+#### UEFI ####
+
+Mount the root volume to /mnt. Efi partition to /mnt/boot/efi.
 ```bash
 mount /dev/root_partition /mnt
 mkdir -p /mnt/boot/efi
 mount /dev/efi_partition /mnt/boot/efi
-mkdir /mnt/home
-mount /dev/home_partition /mnt/home
 ```
+
 You can check your partitions for correct mount with:
 ```bash
 lsblk
@@ -322,8 +339,13 @@ Change ___archlinux___ with your hostname, if my hostname different with you</br
 If the system has a permanent IP address, it should be used instead of 127.0.1.1.
 
 ### 9.4 Downloading packages
+
 ```bash
-pacman -S sudo grub efibootmgr net-tools wpa_supplicant wireless_tools iw dhcpcd
+pacman -S sudo grub net-tools wpa_supplicant wireless_tools iw dhcpcd
+```
+Download efibootmgr in UEFI case
+```bash
+pacman -S efibootmgr
 ```
 
 ### 9.5 Set the root password
@@ -346,13 +368,17 @@ visudo
 
 ### 9.7 Grub
 Installing grub:
+
+#### BIOS ####
+```bash
+grub-install --target=i386-pc /dev/your_disk
+```
+
+#### UEFI ####
 ```bash
 grub-install --target=x86_64-efi --efi-directory=/boot/efi
 ```
-Also i am setting GRUB_TIMEOUT=0 in /etc/default/grub, but you can ___SKIP___ this step, because it is dont necessary:
-```bash
-vim /etc/default/grub
-```
+
 And creating cfg file:
 ```bash
 grub-mkconfig -o /boot/grub/grub.cfg
