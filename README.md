@@ -28,8 +28,7 @@ Hope it will help you too with your arch installation and configuration, but i c
    - [6.3 Mount file systems](#63-mount-file-systems)
 - [7. Sort mirror list](#7-sort-mirror-list)
    - [7.1 Backup original mirror list](#71-backup-original-mirror-list)
-   - [7.2 Sync repositories](#72-sync-repositories)
-   - [7.3 Sort](#73-sort)
+   - [7.2 Sort](#72-sort)
 - [8. Install essential packages and generating fstab](#8-install-essential-packages-and-generating-fstab)
   - [8.1 Pacstrap](#81-pacstrap)
   - [8.2 Fstab generating](#82-fstab-generating)
@@ -117,7 +116,7 @@ gpg --verify archlinux-version-x86_64.iso.sig
 ```
 
 ## 2. Writing an image on flash
-Download official iso from https://www.archlinux.org/download/  , and write it on your flash:
+Download official iso from https://www.archlinux.org/download/ , and write it on your flash:
 
 ### dd
 You can find your flash using command:
@@ -126,7 +125,7 @@ sudo fdisk -l
 ```
 And write image on it:
 ```bash
-sudo dd of=/path/to/arch_iso if=/dev/your_flash bs=8M status=progress
+sudo dd if=/path/to/arch_iso of=/dev/your_flash bs=8M status=progress
 ```
 
 ### Via gui app
@@ -235,23 +234,16 @@ lsblk
 This is a big problem with installing Arch Linux. If you just go on installing it, you might find that the downloads are way too slow. In some cases, it’s so slow that the download fails. It’s because the mirror list (located in /etc/pacman.d/mirrorlist) has a huge number of mirrors but not in a good order. The top mirror is chosen automatically and it may not always be a good choice.</br>
 ___Reflector___ is a Python script which can retrieve the latest mirror list from the Arch Linux Mirror Status page, filter the most up-to-date mirrors, sort them by speed and overwrite the file. We will use it to sort mirror list by speed</br>
 
+```bash
+pacman -Syy reflector
+```
 ### 7.1 Backup original mirror list
 In the following examples, /etc/pacman.d/mirrorlist will be overwritten. Make a backup before proceeding.
 ```bash
 cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak
 ```
 
-### 7.2 Sync repositories
-Sync the pacman repository so that you can download and install software:
-```bash
-pacman -Syy
-```
-
-### 7.3 Sort
-Now we can start sorting mirror list. Firstly, we need to download ___reflector___:
-```bash
-pacman -S reflector
-```
+### 7.2 Sort
 This command will create mirror list with 5 fastest mirror:
 ```bash
 reflector --verbose --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
@@ -272,14 +264,6 @@ Pacstrap script installs the base package, Linux kernel, firmware for common har
 ```bash
 pacstrap /mnt base base-devel linux linux-firmware vim
 ```
-Sometimes in base installation you will see this:
-> ==> WARNING: Possibly missing firmware for module: xhci_pci</br>
-> ==> WARNING: Possibly missing firmware for module: aic94xx</br>
-> ==> WARNING: Possibly missing firmware for module: wd719x</br>
-
-We can fix this missing firmware manually after installation.</br>
-Fix point - [10.4 Bug fixing](#104-bug-fixing)
-
 
 ### 8.2 Fstab generating
 The ___fstab___ file can be used to define how disk partitions, various other block devices, or remote file systems should be mounted into the file system.
@@ -340,15 +324,14 @@ vim /etc/hosts
 >::1          localhost<br>
 >127.0.1.1    archlinux.localdomain  archlinux
 
-Change ___archlinux___ with your hostname, if my hostname different with you.</br>
+Replace ___archlinux___ with your hostname, if my hostname different with you.</br>
 If the system has a permanent IP address, it should be used instead of 127.0.1.1.
 
 ### 9.4 Download some packages
 ```bash
-pacman -S sudo grub networkmanager wireless_tools dhcpcd iw
+pacman -S grub networkmanager wireless_tools dhcpcd iw
 ```
 
-* sudo - you now what is it)
 * grub - standard bootloader.
 * networkmanager - program for managing network connections.
   - Contains a daemon, a command line interface (nmcli) and a curses‐based interface (nmtui).
@@ -402,8 +385,8 @@ grub-install --target=i386-pc /dev/your_disk
 grub-install --target=x86_64-efi --efi-directory=/boot/efi
 ```
 
-#### BIOS and UEFI (for both cases) ####
-And complite with creating config file:
+#### BIOS and UEFI ####
+Complete with creating config file:
 ```bash
 grub-mkconfig -o /boot/grub/grub.cfg
 ```
@@ -428,8 +411,7 @@ sudo systemctl start NetworkManager
 ```
 
 #### 10.1.2 Wifi
-Next instruction taken from - http://rus-linux.net/MyLDP/consol/wifi-from-command-line.html</br>
-Check your network interface with __iwconfig__. You should find there your wireless network card, in my case its wlp2s0 (but its has different names, for example: wlan0, wlan1, wlp2s0, wlp3s0 , etc</br>
+Check your network interface with __iwconfig__. You should find there your wireless network card, in my case its wlp2s0 (but its has different names, for example: wlan0, wlan1, wlp2s0, wlp3s0 , etc)</br>
 ```bash
 iwconfig
 ```
@@ -503,7 +485,100 @@ makepkg -si
 cd .. && rm -rf yay/
 ```
 
-### 10.4 Bug fixing
+### 10.4 Drivers installation
+Choose one of them and install:
+* xf86-video-amdgpu - new free driver for AMD video cards;
+* xf86-video-ati - old free driver for AMD;
+* xf86-video-intel - driver for Intel integrated graphics;
+* xf86-video-nouveau - free driver for NVIDIA cards;
+* xf86-video-vesa - free driver that supports all cards, but with very limited functionality;
+* nvidia - is a proprietary driver for NVIDIA.
+```bash
+sudo pacman -S <your-driver>
+```
+
+### 10.5 Xorg
+Installation:
+```bash
+sudo pacman -S xorg-server xorg-apps xorg xorg-xinit
+```
+Creating basic config:
+```bash
+Sudo Xorg :0 -configure
+```
+This should create a xorg.conf.new file in /root/ that you can copy over to /etc/X11/xorg.conf
+```bash
+sudo cp /root/xorg.conf.new /etc/X11/xorg.conf
+```
+
+### 10.6 Bspwm and sxhkd installation
+```bash
+sudo pacman -S bspwm sxhkd rofi picom alacritty
+```
+* bspwm - tiling window manager.
+* sxhkd - simple X hotkey daemon that uses bspc to communicate with bspwm, it also runs the applications of your choice.
+* rofi - window switcher, run dialog, ssh-launcher and dmenu replacement.
+* picom - compositor.
+* alacritty - terminal emulator.
+
+### 10.7 Bspwm and sxhkd configuration
+Copy config templates into your .config home folder.
+```bash
+mkdir -r ~/.config/bspwm
+cp /usr/share/doc/bspwm/examples/bspwmrc ~/.config/bspwm/
+mkdir ~/.config/sxhkd
+cp /usr/share/doc/bspwm/examples/sxhkdrc ~/.config/sxhkd/
+```
+
+Replace terminal emulator in sxhkd config file(~/.config/sxhkd/sxhkdrc) that will be there with your terminal emulator:</br>
+![Image](./img/sxhkd-configuration.png)
+
+</br>
+
+Than copy .xinitrc into your home directory:
+```bash
+cp /etc/X11/xinit/xinitrc ~/.xinitrc
+```
+Edit .xinitrc:
+```bash
+vim ~/.xinitrc
+```
+Delete this lines:</br>
+![Image](./img/xinitrc-configuration.png)</br>
+
+Add this line into .xinitrc. They will set keyboard layout, set normal cursor, run compositor and start window manager:
+>setxkbmap us &</br>
+>xsetroot -cursor_name left_ptr </br>
+>picom &</br>
+>exec bspwm
+
+Start X session with:
+```bash
+startx
+```
+
+### 10.8 Polybar
+```bash
+yay -Suy polybar
+```
+Clone some polybar themes:
+```bash
+git clone https://github.com/adi1090x/polybar-themes.git
+```
+And set up one of them:
+```bash
+mkdir ~/.config/polybar
+cp -r ./polybar-themes/polibar-X/* ~/.config/polybar
+sudo mv ~/.config/polybar/fonts/* /usr/share/fonts && rmdir .config/polybar/fonts
+cd ~/.config/polybar && ./launch.sh
+```
+To autostart polybar add this line before "exec bspwm" in .xinitrc:
+>$HOME/.config/polybar/launch.sh
+
+----
+# Bug fixing #
+
+## Missing firmware ##
 Bug fixing during base installation [Pacstrap](#81-pacstrap).</br>
 I found this solution here - https://gist.github.com/imrvelj/c65cd5ca7f5505a65e59204f5a3f7a6d</br>
 I know, this firmware is doesn't necessary, but i like when in my system no errors and warnings).</br>
@@ -517,140 +592,18 @@ And run mkinitcpio:
 sudo mkinitcpio -p linux
 ```
 
-### 10.4 Drivers installation
-Choose one of them and install:
-* xf86-video-amdgpu - new free driver for AMD video cards;
-* xf86-video-ati - old free driver for AMD;
-* xf86-video-intel - driver for Intel integrated graphics;
-* xf86-video-nouveau - free driver for NVIDIA cards;
-* xf86-video-vesa - free driver that supports all cards, but with very limited functionality;
-* nvidia is a proprietary driver for NVIDIA.
+## ttf-unifont ##
 ```bash
-sudo pacman -S <your-driver>
+yay -S ttf-unifont
 ```
-
-### 10.5 Xorg
-```bash
-sudo pacman -S xorg-server xorg-apps xorg xorg-xinit
-```
-
-### 10.6 Bspwm
-```bash
-sudo pacman -S bspwm sxhkd dmenu nitrogen picom alacritty
-```
-* bspwm - tiling windows manager.
-* sxhkd - simple X hotkey daemon that uses bspc to communicate with bspwm, it also runs the applications of your choice.
-* dmenu - menu to run applications.
-* nitrogen - wallpaper app.
-* picom - compositor.
-* alacritty - terminal emulator.
-
-#### 10.6.1 Bspwm and sxhkd configuration
-Copy config templates into your .config home folder.
-```bash
-mkdir -r ~/.config/bspwm
-cp /usr/share/doc/bspwm/examples/bspwmrc ~/.config/bspwm/
-mkdir -r ~/.config/sxhkd
-cp /usr/share/doc/bspwm/examples/sxhkdrc ~/.config/sxhkd/
-```
-Replace terminal emulator in sxhkd hot-keys:
-```bash
-vim ~/.config/sxhkd
-```
-You should find this lines:</br>
-![Image](./img/sxhkd-configuration.png)
-
-Replace terminal emulator that will be there with your terminal emulator.</br>
-
-Than copy .xinitrc into your home directory:
-```bash
-cp /etc/X11/xinit/xinitrc ~/.xinitrc
-```
-Edit .xinitrc:
-```bash
-vim ~/.xinitrc
-```
-Delete this lines:</br>
-![Image](./img/xinitrc-configuration.png)</br>
-
-Write this into .xinitrc:
->setxkbmap us & # that is us layout</br>
->picom -f & # running compositor in background</br>
->exec bspwm
-
-And start X session with:
-```bash
-startx
-```
-If you see a black screen it is good(usually), try to move your cursor, by default its will be like X. Lets change this.</br>
-Open your terminal emulator with hotkey - Super + Enter, and edit .xinitrc:
-```bash
-vim ~/.xinitrc
-```
-And add this line before "exec bspwm":
->xsetroot -cursor_name left_ptr
-This will change your cursor every time you start x session(startx).</br>
-
-Lets change wallpaper with nitrogen. You can download wallpaper pack from Distrotube - https://gitlab.com/dwt1/wallpapers#
-```bash
-git clone https://gitlab.com/dwt1/wallpapers.git
-```
-Run dmenu with hotkey - Super + space, start nitorgen and set your wallpaper. To save changes you need to restore nitorgen setting in .xinitrc:
-```bash
-vim ~/.xinitrc
-```
-And add this line before "exec bspwm":</br>
->nitrogen --restore &
-
-In my case instead normal fonts i see only squares, so lets download some fonts:
-```bash
-yay -Sy ttf-unifont siji-git noto-fonts ttf-liberation ttf-hack
-```
-I some cases yay cant import public key to download ttf-unifont:
+In some cases yay cant import public key to download ttf-unifont:
 > PGP keys need importing:</br>
 > -> 95D2E9AB8740D8046387FD151A09227B1F435A33, requred by: ttf-unifont</br>
 > Importing kyes with gpg...</br>
 > gpg: keyserver receive failed: General error</br>
 > problem importing keys
 
-Lets import this pub key manually:
+So we need to import this pub key manually:
 ```bash
 gpg --keyserver pool.sks-keyservers.net --receive-keys 95D2E9AB8740D8046387FD151A09227B1F435A33
 ```
-And install fonts again:
-```bash
-yay -Sy ttf-unifont siji-git noto-fonts ttf-liberation ttf-hack
-```
-Update fonts base after installation:
-```bash
-fc-cache -f
-```
-
-### 10.7 Polybar
-Okay, wallpaper, cursor, terminal is working, now we can set up simple panel. As panel i use polybar. Firstly lets download it:
-```bash
-yay -Suy polybar
-```
-Clone some polybar themes:
-```bash
-git clone https://github.com/adi1090x/polybar-themes.git
-```
-And set up one of them:
-```bash
-mkdir ~/.config/polybar
-cp -r ./polybar-themes/polibar-X/* ~/.config/polybar
-sudo mv ~/.config/polybar/fonts/* /usr/share/fonts
-cd ~/.config/polybar && ./launch.sh
-```
-To autostart polybar add this line before "exec bspwm" in .xinitrc:
->$HOME/.config/polybar/launch.sh
-
-### 10.8 Download some desktop apps
-Perfect!</br>
-Install some desktop software like browser, file manager, IDE, office, etc:
-```bash
-yay -S chromium nemo atom wps-office gtk3 cherrytree qbittorrent feh vlc wget bashtop net-tools neofetch nodejs npm flameshot
-```
-
-
-# THX FOR READING THIS! #
