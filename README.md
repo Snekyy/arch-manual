@@ -1,4 +1,4 @@
-# vvArch Installation Guide (2020, BIOS/UEFI) #
+# Arch Installation Guide (2020, BIOS/UEFI) #
 
 This manual is merge of official installation guide - https://wiki.archlinux.org/index.php/Installation_guide</br>
 Arch users manuals like - https://gist.github.com/tz4678/bd33f94ab96c96bc6719035fcac2b807</br>
@@ -450,7 +450,7 @@ nmcli device wifi connect <ssid> password <AP_password>
 ```
 
 ### 10.2 Enable multilib repository and downloads some software
-Uncomment :
+Uncomment this in /etc/pacman.conf:
 >[multilib]
 >Include = /etc/pacman.d/mirrorlist
 
@@ -517,6 +517,7 @@ Copy config templates into your .config home folder.
 ```bash
 mkdir -r ~/.config/bspwm
 cp /usr/share/doc/bspwm/examples/bspwmrc ~/.config/bspwm/
+chmod +x ~/.config/bspwm/bspwmrc
 mkdir ~/.config/sxhkd
 cp /usr/share/doc/bspwm/examples/sxhkdrc ~/.config/sxhkd/
 ```
