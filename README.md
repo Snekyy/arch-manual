@@ -1,4 +1,4 @@
-# My Arch Installation Instruction (2020, BIOS/UEFI) #
+# vvArch Installation Guide (2020, BIOS/UEFI) #
 
 This manual is merge of official installation guide - https://wiki.archlinux.org/index.php/Installation_guide</br>
 Arch users manuals like - https://gist.github.com/tz4678/bd33f94ab96c96bc6719035fcac2b807</br>
@@ -95,17 +95,6 @@ This is bad output(i am replaced only 1 letter in .sig file):
 There is little bit harder way.</br>
 We should download GnuPG ( this package has different names in different distributions ):
 
-##### Ubuntu/Debian
-```bash
-sudo apt install gpg
-```
-
-##### CentOS/Fedora/RHEL
-For __rpm__ or __yum__ based distributions we can install GPG with the following command.
-```bash
-sudo yum install gnupg
-```
-
 Then we should download public key to verify sing:
 ```bash
 gpg --recv-keys --keyserver=hkp://keys.gnupg.net 7F2D434B9741E8AC
@@ -190,10 +179,7 @@ Creating new dos table of partitions using "o" command. Than creating new partit
 And saving changes - "w".
 
 #### UEFI ####
-Creating new gpt table of partitions using "g" command. Than creating new partition with "n" 512M to EFI all other space to root part.
-Than using "t" command changing type of 512 MB partition to EFI System.
-And write changes with "w".</br></br>
-Than we need to create a home partition on hdd:
+Creating new gpt table of partitions using "g" command. Than creating new partitions with "n" of 512M and all other space. Than using "t" command changing type of 512 MB partition to EFI(1). And write changes with "w".</br>
 
 ### 6.2 Format partitions
 
@@ -393,6 +379,7 @@ grub-mkconfig -o /boot/grub/grub.cfg
 
 ### 9.8 Umount /mnt and reboot
 ```bash
+systemctl enable NetworkManager
 exit
 umount -R /mnt
 shutdown now
@@ -405,10 +392,7 @@ When we booted in installed Arch Linux, we need configure Internet connection.
 ### 10.1 Internet connection
 
 #### 10.1.1 Ethernet
-```bash
-sudo systemctl enable NetworkManager
-sudo systemctl start NetworkManager
-```
+skip
 
 #### 10.1.2 Wifi
 Check your network interface with __iwconfig__. You should find there your wireless network card, in my case its wlp2s0 (but its has different names, for example: wlan0, wlan1, wlp2s0, wlp3s0 , etc)</br>
@@ -462,14 +446,17 @@ iwconfig
 
 ##### Second solution
 ```bash
-sudo systemctl enable NetworkManager
-sudo systemctl start NetworkManager
 nmcli device wifi connect <ssid> password <AP_password>
 ```
 
-### 10.2 Update and downloads some software
+### 10.2 Enable multilib repository and downloads some software
+Uncomment :
+>[multilib]
+>Include = /etc/pacman.d/mirrorlist
+
 ```bash
-sudo pacman -Syu bash-completion git
+sudo pacman -Syyu
+sudo pacman -S bash-completion git
 ```
 
 ### 10.3 Yay installation
@@ -481,7 +468,7 @@ git clone https://aur.archlinux.org/yay.git
 Go to the yay directory and makepkg:
 ```bash
 cd yay
-makepkg -si
+makepkg -sri
 cd .. && rm -rf yay/
 ```
 
@@ -493,6 +480,7 @@ Choose one of them and install:
 * xf86-video-nouveau - free driver for NVIDIA cards;
 * xf86-video-vesa - free driver that supports all cards, but with very limited functionality;
 * nvidia - is a proprietary driver for NVIDIA.
+
 ```bash
 sudo pacman -S <your-driver>
 ```
@@ -504,13 +492,16 @@ sudo pacman -S xorg-server xorg-apps xorg xorg-xinit
 ```
 Creating basic config:
 ```bash
-Sudo Xorg :0 -configure
+sudo Xorg :0 -configure
 ```
 This should create a xorg.conf.new file in /root/ that you can copy over to /etc/X11/xorg.conf
 ```bash
 sudo cp /root/xorg.conf.new /etc/X11/xorg.conf
 ```
-
+Than copy .xinitrc into your home directory:
+```bash
+cp /etc/X11/xinit/xinitrc ~/.xinitrc
+```
 ### 10.6 Bspwm and sxhkd installation
 ```bash
 sudo pacman -S bspwm sxhkd rofi picom alacritty
@@ -535,10 +526,7 @@ Replace terminal emulator in sxhkd config file(~/.config/sxhkd/sxhkdrc) that wil
 
 </br>
 
-Than copy .xinitrc into your home directory:
-```bash
-cp /etc/X11/xinit/xinitrc ~/.xinitrc
-```
+
 Edit .xinitrc:
 ```bash
 vim ~/.xinitrc
@@ -546,7 +534,7 @@ vim ~/.xinitrc
 Delete this lines:</br>
 ![Image](./img/xinitrc-configuration.png)</br>
 
-Add this line into .xinitrc. They will set keyboard layout, set normal cursor, run compositor and start window manager:
+Add this lines into .xinitrc. They will set keyboard layout, set normal cursor, run compositor and start window manager:
 >setxkbmap us &</br>
 >xsetroot -cursor_name left_ptr </br>
 >picom &</br>
@@ -575,8 +563,50 @@ cd ~/.config/polybar && ./launch.sh
 To autostart polybar add this line before "exec bspwm" in .xinitrc:
 >$HOME/.config/polybar/launch.sh
 
+
+### 10.9 Sound ###
+```bash
+sudo pacman -S alsa-lib alsa-firmware alsa-utils pulseaudio
+systemctl --user enable pulseaudio
+systemctl --user start pulseaudio
+```
+
+### 10.10 Display Manager ###
+
+#### Slim ####
+```bash
+sudo pacman -S slim
+sudo systemctl enable slim
+```
+Config file is - /etc/slim.conf
+
+#### Lightdm ####
+```bash
+sudo pacman -S lighdm lightdm-greeter
+sudo systemctl enable lightdm
+```
+Config file is - /etc/lightdm/lightdm.conf
+
+#### Sddm ####
+```bash
+sudo pacman -S sddm
+sudo systemctl enable sddm
+```
+The default configuration file for SDDM can be found at /usr/lib/sddm/sddm.conf.d/default.conf
+
+#### Gdm ####
+```bash
+sudo pacman -S gdm
+sudo systemctl enable gdm
+```
+
 ----
-# Bug fixing #
+# Bug during installation #
+
+## reflector - /usr/bin/python3: No module named Reflector ##
+```bash
+pacman -S python3
+```
 
 ## Missing firmware ##
 Bug fixing during base installation [Pacstrap](#81-pacstrap).</br>
@@ -592,7 +622,7 @@ And run mkinitcpio:
 sudo mkinitcpio -p linux
 ```
 
-## ttf-unifont ##
+## ttf-unifont public key ##
 ```bash
 yay -S ttf-unifont
 ```
