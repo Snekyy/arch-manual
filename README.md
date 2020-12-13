@@ -449,22 +449,28 @@ iwconfig
 nmcli device wifi connect <ssid> password <AP_password>
 ```
 
-### 10.2 Enable multilib repository and downloads some software
+### 10.2 Enable multilib repository
 Uncomment this in /etc/pacman.conf:
 >[multilib]
 >Include = /etc/pacman.d/mirrorlist
 
 ```bash
 sudo pacman -Syyu
-sudo pacman -S bash-completion git
 ```
 
 ### 10.3 Yay installation
+Install git
+```bash
+sudo pacman -S git
+```
 Clone the git repository:
 ```bash
 git clone https://aur.archlinux.org/yay.git
 ```
-
+Or clone yay-git if you want yay of latest commit version.
+```bash
+git clone https://aur.archlinux.org/yay-git.git
+```
 Go to the yay directory and makepkg:
 ```bash
 cd yay
@@ -502,7 +508,7 @@ Than copy .xinitrc into your home directory:
 ```bash
 cp /etc/X11/xinit/xinitrc ~/.xinitrc
 ```
-### 10.6 Bspwm and sxhkd installation
+### 10.6 Wm installation and configuration
 ```bash
 sudo pacman -S bspwm sxhkd rofi picom alacritty
 ```
@@ -512,7 +518,6 @@ sudo pacman -S bspwm sxhkd rofi picom alacritty
 * picom - compositor.
 * alacritty - terminal emulator.
 
-### 10.7 Bspwm and sxhkd configuration
 Copy config templates into your .config home folder.
 ```bash
 mkdir -r ~/.config/bspwm
@@ -546,7 +551,7 @@ Start X session with:
 startx
 ```
 
-### 10.8 Polybar
+### 10.7 Polybar
 ```bash
 yay -Suy polybar
 ```
@@ -565,14 +570,15 @@ To autostart polybar add this line before "exec bspwm" in .xinitrc:
 >$HOME/.config/polybar/launch.sh
 
 
-### 10.9 Sound ###
+### 10.8 Sound ###
 ```bash
 sudo pacman -S alsa-lib alsa-firmware alsa-utils pulseaudio
+sudo gpasswd -a <your-username> audio
 systemctl --user enable pulseaudio
 systemctl --user start pulseaudio
 ```
 
-### 10.10 Display Manager ###
+### 10.9 Display Manager ###
 
 #### Slim ####
 ```bash
@@ -583,7 +589,7 @@ Config file is - /etc/slim.conf
 
 #### Lightdm ####
 ```bash
-sudo pacman -S lighdm lightdm-greeter
+sudo pacman -S lighdm lightdm-gtk-greeter
 sudo systemctl enable lightdm
 ```
 Config file is - /etc/lightdm/lightdm.conf
@@ -599,42 +605,4 @@ The default configuration file for SDDM can be found at /usr/lib/sddm/sddm.conf.
 ```bash
 sudo pacman -S gdm
 sudo systemctl enable gdm
-```
-
-----
-# Bug during installation #
-
-## reflector - /usr/bin/python3: No module named Reflector ##
-```bash
-pacman -S python3
-```
-
-## Missing firmware ##
-Bug fixing during base installation [Pacstrap](#81-pacstrap).</br>
-I found this solution here - https://gist.github.com/imrvelj/c65cd5ca7f5505a65e59204f5a3f7a6d</br>
-I know, this firmware is doesn't necessary, but i like when in my system no errors and warnings).</br>
-```bash
-yay -Sy aic94xx-firmware wd719x-firmware upd72020x-fw
-```
-Your firmware can be different with my.</br>
-
-And run mkinitcpio:
-```bash
-sudo mkinitcpio -p linux
-```
-
-## ttf-unifont public key ##
-```bash
-yay -S ttf-unifont
-```
-In some cases yay cant import public key to download ttf-unifont:
-> PGP keys need importing:</br>
-> -> 95D2E9AB8740D8046387FD151A09227B1F435A33, requred by: ttf-unifont</br>
-> Importing kyes with gpg...</br>
-> gpg: keyserver receive failed: General error</br>
-> problem importing keys
-
-So we need to import this pub key manually:
-```bash
-gpg --keyserver pool.sks-keyservers.net --receive-keys 95D2E9AB8740D8046387FD151A09227B1F435A33
 ```
